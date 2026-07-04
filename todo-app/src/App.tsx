@@ -55,11 +55,26 @@ function App() {
 
     console.log(data);
 
+    const aiResponse = await fetch(
+      "http://127.0.0.1:5000/analyze",
+      {
+          method: "POST",
+          headers: {
+              "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+              image: data.secure_url,
+          }),
+      }
+    );
+
+    const ai = await aiResponse.json();  
+     
     const newItem = {
       id: Date.now(),
       image: data.secure_url,
-      label: "AI解析待ち",
-      feature: "特徴未設定",
+      label: ai.label,
+      feature: ai.feature,
     };
 
     setItems((prev) => [newItem, ...prev]);
