@@ -1,4 +1,5 @@
 # Gekizaru-Project
+## フロントエンドの開発について
 
 - cd todo-app
 ディレクトリを移動
@@ -18,17 +19,17 @@
 - cd backend
 
 Windows
-- python -m venv venv
-- venv\Scripts\activate
+**1** python -m venv venv
+**2** venv\Scripts\activate
 
 Mac
-- python3 -m venv venv
-- source venv/bin/activate
+**1** python3 -m venv venv
+**2** source venv/bin/activate
 
 Windows & Mac
-- pip install -r requirements.txt
+**3**** pip install -r requirements.txt
 
-# VSCode上でPythonのコードの色分けがうまく機能していない場合
+## VSCode上でPythonのコードの色分けがうまく機能していない場合
 VSCodeの設定で、**extra path** と検索
 項目の追加から
-**.\backend\venv\Lib\site-packages\ **
+.\backend\venv\Lib\site-packages\
