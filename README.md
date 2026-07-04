@@ -3,13 +3,13 @@
 
 以下を上から順にターミナルで実行
 
-- cd todo-app
+- cd todo-app  
 ディレクトリを移動
 
-- npm install -D
+- npm install -D  
 依存関係のインストール
 
-- npm run dev
+- npm run dev  
 ローカルサーバの起動
 
 - ctrl+Cでサーバーの停止
@@ -21,7 +21,7 @@
 
 以下を上から順にターミナルで実行
 
-- cd backend
+- cd backend  
 ディレクトリを移動
 
 Windows
@@ -35,6 +35,6 @@ Mac
 - pip install -r requirements.txt
 
 ## VSCode上でPythonのコードの色分けがうまく機能していない場合
-VSCodeの設定で、**extra path** と検索
-項目の追加から
+VSCodeの設定で、**extra path** と検索  
+項目の追加から  
 .\backend\venv\Lib\site-packages\
