@@ -1,122 +1,125 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import "./App.css";
+import { useState,useEffect } from "react";
+import Button from "@mui/material/Button";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+
+type LostItem = {
+  id: number;
+  image: string;
+  label: string;
+  feature: string;
+};
+
+const initialItems: LostItem[] = [];
+
+const CLOUD_NAME = "dluf5vsfs";
+const UPLOAD_PRESET = "hackathon";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [items, setItems] = useState<LostItem[]>(() => {
+    const saved = localStorage.getItem("lostItems");
 
+    if (saved) {
+      return JSON.parse(saved) as LostItem[];
+    }
+
+    return initialItems;
+  });
+  
+  useEffect(() => {
+    localStorage.setItem("lostItems", JSON.stringify(items));
+  }, [items]);
+  const handleDelete = (id: number) => {
+    setItems((prev) => prev.filter((item) => item.id !== id));
+  };
+  const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const file = event.target.files?.[0];
+
+  if (!file) return;
+
+  const formData = new FormData();
+
+  formData.append("file", file);
+  formData.append("upload_preset", UPLOAD_PRESET);
+
+  try {
+    const response = await fetch(
+      `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
+    const data = await response.json();
+
+    console.log(data);
+
+    const newItem = {
+      id: Date.now(),
+      image: data.secure_url,
+      label: "AI解析待ち",
+      feature: "特徴未設定",
+    };
+
+    setItems((prev) => [newItem, ...prev]);
+
+  } catch (err) {
+    console.error(err);
+  }
+  
+};
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="app">
+      <header>
+        <h1>紛失物リスト</h1>
 
-      <div className="ticks"></div>
+        <input
+          type="text"
+          placeholder="ラベルや特徴を検索..."
+          className="searchBox"
+        />
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+    <div className="uploadArea">
+      <Button
+        variant="contained"
+        component="label"
+        startIcon={<CloudUploadIcon />}
+        size="large"
+      >
+      画像をアップロード
+       <input
+        hidden
+        accept="image/*"
+        type="file"
+        onChange={handleUpload}
+      />
+      </Button>
+    </div>
+      </header>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      <main className="grid">
+        {items.map((item) => (
+          <div className="card" key={item.id}>
+            <img src={item.image} alt={item.label} />
+
+            <div className="cardBody">
+              <h3>{item.label}</h3>
+              <p>{item.feature}</p>
+              <Button
+                variant="outlined"
+                color="error"
+                onClick={() => handleDelete(item.id)}
+                >
+                削除
+              </Button>
+            </div>
+    </div>
+))}
+      </main>
+    </div>
+    
+  );
 }
 
-export default App
+export default App;
