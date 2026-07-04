@@ -2,13 +2,16 @@
 
 import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function UploadPage() {
+  const router = useRouter();
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [category, setCategory] = useState('');
   const [features, setFeatures] = useState('');
   const [facilityName, setFacilityName] = useState('');
   const [message, setMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -24,16 +27,17 @@ export default function UploadPage() {
       return;
     }
 
-    const nextPreviewUrl = URL.createObjectURL(file);
-    setPreviewUrl((previousUrl) => {
-      if (previousUrl) {
-        URL.revokeObjectURL(previousUrl);
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = typeof reader.result === 'string' ? reader.result : null;
+      if (result) {
+        setPreviewUrl(result);
       }
-      return nextPreviewUrl;
-    });
+    };
+    reader.readAsDataURL(file);
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (!category.trim() || !facilityName.trim()) {
@@ -41,7 +45,48 @@ export default function UploadPage() {
       return;
     }
 
-    setMessage(`${category} を ${facilityName} に登録するイメージです。`);
+    setIsSubmitting(true);
+    setMessage('');
+
+    const featureList = features
+      .split(',')
+      .map((feature) => feature.trim())
+      .filter(Boolean);
+
+    try {
+      const response = await fetch('/api/lost-items', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          category,
+          features: featureList,
+          facilityName,
+          imageUrl: previewUrl || ''
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || '登録に失敗しました。');
+      }
+
+      setMessage(`${data.category} を ${data.facilityName} に登録しました。一覧へ戻ります。`);
+      setCategory('');
+      setFeatures('');
+      setFacilityName('');
+      setPreviewUrl(null);
+
+      window.setTimeout(() => {
+        router.push('/');
+      }, 800);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : '登録に失敗しました。');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -112,9 +157,10 @@ export default function UploadPage() {
 
           <button
             type="submit"
-            className="rounded-full bg-sky-600 px-5 py-2 text-sm font-semibold text-white hover:bg-sky-700"
+            disabled={isSubmitting}
+            className="rounded-full bg-sky-600 px-5 py-2 text-sm font-semibold text-white hover:bg-sky-700 disabled:cursor-not-allowed disabled:bg-slate-400"
           >
-            アップロードする
+            {isSubmitting ? '登録中...' : 'アップロードする'}
           </button>
 
           {message ? <p className="rounded-lg bg-slate-100 px-3 py-2 text-sm text-slate-700">{message}</p> : null}

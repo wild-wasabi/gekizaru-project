@@ -6,47 +6,39 @@ import type { LostItem } from '@/types';
 export default function Home() {
   const [items, setItems] = useState<LostItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
-    setItems([
-      {
-        id: '1',
-        imageUrl: 'https://via.placeholder.com/100x100?text=傘',
-        category: '傘',
-        features: ['黒', '長傘', '木製の持ち手'],
-        facilityName: '〇〇駅',
-        createdAt: '2026-07-04'
-      },
-      {
-        id: '2',
-        imageUrl: 'https://via.placeholder.com/100x100?text=財布',
-        category: '財布',
-        features: ['茶色', '小銭入れあり', 'ブランドロゴ'],
-        facilityName: '〇〇駅改札内',
-        createdAt: '2026-07-03'
-      },
-      {
-        id: '3',
-        imageUrl: 'https://via.placeholder.com/100x100?text=バッグ',
-        category: 'バッグ',
-        features: ['赤', '大きめ', 'チャーム付き'],
-        facilityName: '△△商業施設',
-        createdAt: '2026-07-02'
-      },
-      {
-        id: '4',
-        imageUrl: 'https://via.placeholder.com/100x100?text=スマホ',
-        category: 'スマートフォン',
-        features: ['黒', 'ケース付き', '画面割れあり'],
-        facilityName: '□□公園',
-        createdAt: '2026-07-01'
+    const fetchItems = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch('/api/lost-items');
+        if (!response.ok) {
+          throw new Error('忘れ物データの取得に失敗しました');
+        }
+
+        const data = await response.json();
+        setItems(data);
+        setErrorMessage('');
+      } catch (error) {
+        setErrorMessage(error instanceof Error ? error.message : '読み込みに失敗しました');
+      } finally {
+        setIsLoading(false);
       }
-    ]);
+    };
+
+    fetchItems();
   }, []);
 
   const filteredItems = items.filter((item) => {
-    const haystack = [item.category, ...item.features, item.facilityName].join(' ');
-    return haystack.includes(searchQuery);
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) {
+      return true;
+    }
+
+    const haystack = [item.category, ...item.features, item.facilityName].join(' ').toLowerCase();
+    return haystack.includes(query);
   });
 
   return (
@@ -76,19 +68,39 @@ export default function Home() {
         </div>
 
         <section className="grid gap-4">
-          {filteredItems.map((item) => (
-            <article key={item.id} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-              <div className="flex gap-4">
-                <div className="h-24 w-24 rounded-lg bg-slate-100" />
-                <div className="space-y-1">
-                  <h2 className="text-lg font-semibold">種類: {item.category}</h2>
-                  <p className="text-sm text-slate-600">特徴: {item.features.join(', ')}</p>
-                  <p className="font-semibold text-sky-700">保管場所: {item.facilityName}</p>
-                  <p className="text-xs text-slate-500">登録日: {item.createdAt}</p>
+          {isLoading ? (
+            <div className="rounded-xl border border-slate-200 bg-white p-6 text-center text-slate-600">
+              読み込み中です...
+            </div>
+          ) : errorMessage ? (
+            <div className="rounded-xl border border-rose-200 bg-rose-50 p-6 text-center text-rose-700">
+              {errorMessage}
+            </div>
+          ) : filteredItems.length > 0 ? (
+            filteredItems.map((item) => (
+              <article key={item.id} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                <div className="flex gap-4">
+                  {item.imageUrl ? (
+                    <img src={item.imageUrl} alt={item.category} className="h-24 w-24 rounded-lg object-cover" />
+                  ) : (
+                    <div className="flex h-24 w-24 items-center justify-center rounded-lg bg-slate-100 text-xs text-slate-500">
+                      画像なし
+                    </div>
+                  )}
+                  <div className="space-y-1">
+                    <h2 className="text-lg font-semibold">種類: {item.category}</h2>
+                    <p className="text-sm text-slate-600">特徴: {item.features.join(', ')}</p>
+                    <p className="font-semibold text-sky-700">保管場所: {item.facilityName}</p>
+                    <p className="text-xs text-slate-500">登録日: {item.createdAt}</p>
+                  </div>
                 </div>
-              </div>
-            </article>
-          ))}
+              </article>
+            ))
+          ) : (
+            <div className="rounded-xl border border-slate-200 bg-white p-6 text-center text-slate-600">
+              該当する忘れ物は見つかりませんでした。
+            </div>
+          )}
         </section>
       </div>
     </main>
