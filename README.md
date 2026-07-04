@@ -1,6 +1,8 @@
 # Gekizaru-Project
 ## フロントエンドの開発について
 
+以下を上から順にターミナルで実行
+
 - cd todo-app
 ディレクトリを移動
 
@@ -16,18 +18,21 @@
 
 ## バックエンドの開発について
 ### Flaskの環境構築
+
+以下を上から順にターミナルで実行
+
 - cd backend
+ディレクトリを移動
 
 Windows
-**1** python -m venv venv
-**2** venv\Scripts\activate
+- python -m venv venv
+- venv\Scripts\activate
+- pip install -r requirements.txt
 
 Mac
-**1** python3 -m venv venv
-**2** source venv/bin/activate
-
-Windows & Mac
-**3**** pip install -r requirements.txt
+- python3 -m venv venv
+- source venv/bin/activate
+- pip install -r requirements.txt
 
 ## VSCode上でPythonのコードの色分けがうまく機能していない場合
 VSCodeの設定で、**extra path** と検索
