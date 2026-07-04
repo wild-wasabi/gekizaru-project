@@ -1,4 +1,6 @@
 import "./App.css";
+import Button from "@mui/material/Button";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 
 const items = [
   {
@@ -50,6 +52,16 @@ function App() {
           placeholder="ラベルや特徴を検索..."
           className="searchBox"
         />
+
+    <div className="uploadArea">
+      <Button
+        variant="contained"
+        startIcon={<CloudUploadIcon />}
+        size="large"
+      >
+      画像をアップロード
+      </Button>
+    </div>
       </header>
 
       <main className="grid">
