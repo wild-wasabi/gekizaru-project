@@ -43,7 +43,7 @@ function App() {
   return (
     <div className="app">
       <header>
-        <h1>Lost & Found Search</h1>
+        <h1>紛失物リスト</h1>
 
         <input
           type="text"
