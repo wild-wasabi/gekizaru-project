@@ -1,47 +1,74 @@
 import "./App.css";
+import { useState,useEffect } from "react";
 import Button from "@mui/material/Button";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 
-const items = [
-  {
-    id: 1,
-    image: "https://picsum.photos/300?1",
-    label: "スマホ",
-    feature: "青色ケース",
-  },
-  {
-    id: 2,
-    image: "https://picsum.photos/300?2",
-    label: "傘",
-    feature: "黒色",
-  },
-  {
-    id: 3,
-    image: "https://picsum.photos/300?3",
-    label: "財布",
-    feature: "茶色",
-  },
-  {
-    id: 4,
-    image: "https://picsum.photos/300?4",
-    label: "イヤホン",
-    feature: "白色",
-  },
-  {
-    id: 5,
-    image: "https://picsum.photos/300?5",
-    label: "鍵",
-    feature: "シルバー",
-  },
-  {
-    id: 6,
-    image: "https://picsum.photos/300?6",
-    label: "水筒",
-    feature: "青色",
-  },
-];
+type LostItem = {
+  id: number;
+  image: string;
+  label: string;
+  feature: string;
+};
+
+const initialItems: LostItem[] = [];
+
+const CLOUD_NAME = "dluf5vsfs";
+const UPLOAD_PRESET = "hackathon";
 
 function App() {
+  const [items, setItems] = useState<LostItem[]>(() => {
+    const saved = localStorage.getItem("lostItems");
+
+    if (saved) {
+      return JSON.parse(saved) as LostItem[];
+    }
+
+    return initialItems;
+  });
+  
+  useEffect(() => {
+    localStorage.setItem("lostItems", JSON.stringify(items));
+  }, [items]);
+  const handleDelete = (id: number) => {
+    setItems((prev) => prev.filter((item) => item.id !== id));
+  };
+  const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const file = event.target.files?.[0];
+
+  if (!file) return;
+
+  const formData = new FormData();
+
+  formData.append("file", file);
+  formData.append("upload_preset", UPLOAD_PRESET);
+
+  try {
+    const response = await fetch(
+      `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
+    const data = await response.json();
+
+    console.log(data);
+
+    const newItem = {
+      id: Date.now(),
+      image: data.secure_url,
+      label: "AI解析待ち",
+      feature: "特徴未設定",
+    };
+
+    setItems((prev) => [newItem, ...prev]);
+
+  } catch (err) {
+    console.error(err);
+  }
+  
+};
   return (
     <div className="app">
       <header>
@@ -56,10 +83,17 @@ function App() {
     <div className="uploadArea">
       <Button
         variant="contained"
+        component="label"
         startIcon={<CloudUploadIcon />}
         size="large"
       >
       画像をアップロード
+       <input
+        hidden
+        accept="image/*"
+        type="file"
+        onChange={handleUpload}
+      />
       </Button>
     </div>
       </header>
@@ -72,11 +106,19 @@ function App() {
             <div className="cardBody">
               <h3>{item.label}</h3>
               <p>{item.feature}</p>
+              <Button
+                variant="outlined"
+                color="error"
+                onClick={() => handleDelete(item.id)}
+                >
+                削除
+              </Button>
             </div>
-          </div>
-        ))}
+    </div>
+))}
       </main>
     </div>
+    
   );
 }
 
