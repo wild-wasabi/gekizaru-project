@@ -17,6 +17,7 @@ type LostItem = {
   isFound?: boolean;
   finderName?: string;
   location?: string; 
+  foundDate?: string;
 };
 
 const initialItems: LostItem[] = [];
@@ -26,7 +27,10 @@ const UPLOAD_PRESET = "hackathon";
 const PASSWORD = "admin";
 
 // 選択できる場所のリスト
-const LOCATION_OPTIONS = ["未指定", "大学学生課", "情報科事務室"];
+const LOCATION_OPTIONS = ["未指定", "大学学生課", "情報科事務室","物理学科事務室","地理学科事務室","心理学科事務室",
+"社会福祉学科事務室","社会学科事務室","社会学科事務室","体育学科事務室","数学科事務室","化学科事務室","教育学科事務室",
+"生命科学科事務室","英文学科事務室","史学科事務室","国文学科事務室","中国語中国文化学科事務室","地球科学科事務室","ドイツ文学科事務室"
+,"哲学科事務室"];
 
 function App() {
   const [items, setItems] = useState<LostItem[]>(() => {
@@ -74,6 +78,14 @@ function App() {
     );
   };
 
+  const handleDateChange = (id: number, newDate: string) => {
+    setItems((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, foundDate: newDate } : item
+      )
+    );
+  };
+
   const handleMarkAsFound = (id: number) => {
     if (!isAdmin) {
       const passwordInput = prompt("管理者パスワードを入力してください");
@@ -84,6 +96,8 @@ function App() {
       }
       setIsAdmin(true);
     }
+
+  const today = new Date().toISOString().split('T')[0];
 
     const nameInput = prompt("持ち主のお名前を入力してください");
     if (!nameInput) {
@@ -135,6 +149,7 @@ function App() {
         isFound: false,
         finderName: "",
         location: "未指定",
+        foundDate: "",
       };
 
       setItems((prev) => [newItem, ...prev]);
@@ -232,11 +247,36 @@ function App() {
                   </span>
                 )}
               </div>
+
+              <div style={{ marginBottom: "15px" }}>
+                <span style={{ fontSize: "13px", color: "#555", display: "block", marginBottom: "4px" }}>🔍 発見日:</span>
+                {isAdmin ? (
+                  // 管理者の場合はカレンダーからいつでも修正・追記可能
+                  <input
+                    type="date"
+                    value={item.foundDate || ""}
+                    onChange={(e) => handleDateChange(item.id, e.target.value)}
+                    style={{
+                      width: "100%",
+                      padding: "8px",
+                      fontSize: "14px",
+                      borderRadius: "4px",
+                      border: "1px solid #ccc",
+                      boxSizing: "border-box"
+                    }}
+                  />
+                ) : (
+                  // 一般ユーザーにはテキスト表示のみ
+                  <span style={{ fontSize: "15px", fontWeight: "bold", color: "#e65100" }}>
+                    {item.foundDate ? item.foundDate.replace(/-/g, "/") : "不明"}
+                  </span>
+                )}
+              </div>
               
               {item.isFound ? (
                 <div className="statusBadge">
                   {isAdmin ? (
-                    <>返却済み</>
+                    <>返却済み:受取人<strong>{item.finderName || "未登録"} 様</strong></>
                   ) : (
                     <>返却済み</>
                   )}
