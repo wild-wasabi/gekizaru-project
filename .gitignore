@@ -2,6 +2,7 @@
 backend/.env
 backend/venv/
 backend/2/
+__pycache__/
 
 # Node
 todo-app/node_modules/
