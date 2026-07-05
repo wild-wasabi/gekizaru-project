@@ -236,7 +236,7 @@ function App() {
               {item.isFound ? (
                 <div className="statusBadge">
                   {isAdmin ? (
-                    <>返却済み：<strong>{item.finderName} 様</strong></>
+                    <>返却済み</>
                   ) : (
                     <>返却済み</>
                   )}
