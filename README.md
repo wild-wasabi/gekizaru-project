@@ -34,7 +34,14 @@ Mac
 - source venv/bin/activate
 - pip install -r requirements.txt
 
+##
+Flaskの起動  
+- (venv)/.../backend に移動して python run.py
+
+### venvの終了方法
+deactivate
+
 ## VSCode上でPythonのコードの色分けがうまく機能していない場合
 VSCodeの設定で、**extra path** と検索  
 項目の追加から  
-.\backend\venv\Lib\site-packages\
+.\backend\venv\Lib\site-packages\  
