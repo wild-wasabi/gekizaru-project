@@ -3,7 +3,8 @@ import { useState,useEffect } from "react";
 import Button from "@mui/material/Button";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import CircularProgress from "@mui/material/CircularProgress";
-
+import Modal from "@mui/material/Modal";
+import Box from "@mui/material/Box";
 type LostItem = {
   id: number;
   image: string;
@@ -29,6 +30,7 @@ function App() {
   });
   const [searchTerm, setSearchTerm] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const[selectedImage,setSelectedImage]=useState<string|null>(null);
   useEffect(() => {
     localStorage.setItem("lostItems", JSON.stringify(items));
   }, [items]);
@@ -134,7 +136,12 @@ const filteredItems = items.filter(
         {/* 🟢 items ではなく filteredItems をループする */}
         {filteredItems.map((item) => (
           <div className="card" key={item.id}>
-            <img src={item.image} alt={item.label} />
+            <img 
+              src={item.image}
+              alt={item.label} 
+              onClick={()=>setSelectedImage(item.image)}
+              style={{cursor:"pointer"}}
+            />
             <div className="cardBody">
               <h3>{item.label}</h3>
               <p>{item.feature}</p>
@@ -154,6 +161,35 @@ const filteredItems = items.filter(
           </p>
         )}
       </main>
+      <Modal
+        open={selectedImage !== null} //selectedImageにURLが入っているときだけ開く
+        onClose={() => setSelectedImage(null)} //背景をクリックしたらStateをnullにして閉じる
+        aria-labelledby="image-modal"
+        sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }} //MUIで画面中央に配置
+      >
+        <Box sx={{
+          outline: 'none', //変な青枠を消す
+          maxWidth: '90vw',
+          maxHeight: '90vh',
+          bgcolor: 'white', //CSSに依存せず、白背景を強制
+          p: 1, //少しパディングを入れる
+          borderRadius: 2,
+          boxShadow: 24, //影をつける
+        }}>
+          {selectedImage && (
+            <img 
+              src={selectedImage} 
+              alt="拡大画像" 
+              style={{ 
+                width: '100%', 
+                height: 'auto', 
+                maxHeight: '85vh', //画面からはみ出さないように
+                objectFit: 'contain' //アスペクト比を維持して全体を表示
+              }} 
+            />
+          )}
+        </Box>
+      </Modal>
     </div>
   );
 }
