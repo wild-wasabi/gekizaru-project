@@ -1,0 +1,11 @@
+# Python
+backend/.env
+backend/venv/
+backend/2/
+
+# Node
+todo-app/node_modules/
+todo-app/dist/
+
+# Env files
+**/.env
